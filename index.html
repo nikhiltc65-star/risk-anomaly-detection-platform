@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#10111b" />
+  <meta name="description" content="A real-time risk and anomaly detection dashboard for monitoring transactions, events, risk scores, and alerts." />
+  <title>RiskWatch | Real-Time Risk Detection</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#top" aria-label="RiskWatch home">
+        <span class="brand-mark"><span></span><span></span><span></span></span>
+        <span>risk<span class="brand-light">watch</span><small>INTELLIGENCE CONSOLE</small></span>
+      </a>
+
+      <div class="workspace-label">WORKSPACE</div>
+      <nav class="side-nav" aria-label="Main navigation">
+        <a class="nav-item active" href="#overview"><span class="nav-icon">◫</span> Overview</a>
+        <a class="nav-item" href="#events"><span class="nav-icon">⌁</span> Event stream <span class="nav-count" id="nav-event-count">0</span></a>
+        <a class="nav-item" href="#alerts"><span class="nav-icon">◉</span> Risk alerts <span class="nav-dot"></span></a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="queue-card">
+          <div class="queue-card-top"><span class="pulse-dot" id="sidebar-pulse"></span><span>MESSAGE QUEUE</span></div>
+          <div class="queue-name">risk.events</div>
+          <p id="sidebar-queue-copy">Waiting for RabbitMQ connection</p>
+          <div class="queue-track"><span id="queue-track-fill"></span></div>
+          <div class="queue-footer"><span>Broker status</span><strong id="sidebar-status">Connecting</strong></div>
+        </div>
+        <div class="sidebar-footnote"><span class="shield-icon">⬡</span><span>RiskWatch <b>Demo Environment</b><br />Rule-based detection engine</span></div>
+      </div>
+    </aside>
+
+    <main class="main-content" id="top">
+      <header class="topbar">
+        <div class="breadcrumb"><span>Workspace</span><span class="crumb-slash">/</span><strong>Risk overview</strong></div>
+        <div class="topbar-right">
+          <span class="live-indicator"><span class="live-dot" id="header-live-dot"></span><span id="header-live-label">CONNECTING</span></span>
+          <span class="topbar-date" id="current-date">LIVE MONITOR</span>
+          <div class="avatar" aria-label="Demo user">RW</div>
+        </div>
+      </header>
+
+      <section class="page-intro" id="overview">
+        <div>
+          <div class="eyebrow"><span class="eyebrow-line"></span> REAL-TIME MONITORING</div>
+          <h1>Risk overview<span class="title-period">.</span></h1>
+          <p class="intro-copy">See unusual activity as it happens. Events flow through the queue, get scored, and surface here.</p>
+        </div>
+        <div class="intro-actions">
+          <button class="button button-quiet" id="refresh-button" type="button"><span class="refresh-icon">↻</span> Refresh</button>
+          <button class="button button-primary" id="simulate-button" type="button"><span class="plus-icon">＋</span> Simulate event</button>
+        </div>
+      </section>
+
+      <section class="metrics-grid" aria-label="Risk metrics">
+        <article class="metric-card">
+          <div class="metric-head"><span>Total events</span><span class="metric-symbol symbol-violet">⌁</span></div>
+          <div class="metric-value" id="total-events">0</div>
+          <div class="metric-foot"><span class="metric-neutral">Processed in this session</span></div>
+        </article>
+        <article class="metric-card">
+          <div class="metric-head"><span>Active alerts</span><span class="metric-symbol symbol-amber">◉</span></div>
+          <div class="metric-value" id="active-alerts">0</div>
+          <div class="metric-foot"><span class="foot-dot amber-dot"></span><span class="metric-neutral">Score of 40 or higher</span></div>
+        </article>
+        <article class="metric-card">
+          <div class="metric-head"><span>High risk</span><span class="metric-symbol symbol-red">↗</span></div>
+          <div class="metric-value" id="high-risk">0</div>
+          <div class="metric-foot"><span class="foot-dot red-dot"></span><span class="metric-neutral">Score of 70 or higher</span></div>
+        </article>
+        <article class="metric-card">
+          <div class="metric-head"><span>Average risk score</span><span class="metric-symbol symbol-green">⌗</span></div>
+          <div class="metric-value"><span id="avg-risk">0</span><span class="value-suffix">/100</span></div>
+          <div class="metric-foot"><span class="metric-neutral">Across processed events</span></div>
+        </article>
+      </section>
+
+      <section class="middle-grid">
+        <article class="panel risk-panel">
+          <div class="panel-heading">
+            <div><div class="panel-kicker">RISK DISTRIBUTION</div><h2>Event risk levels</h2></div>
+            <span class="panel-pill">RULE ENGINE</span>
+          </div>
+          <p class="panel-description">Processed events grouped by their calculated risk score.</p>
+          <div class="risk-levels">
+            <div class="risk-level-row">
+              <div class="risk-level-label"><span class="level-bullet high-bullet"></span><span>High</span><strong id="high-count">0</strong></div>
+              <div class="bar-track"><span class="bar-fill high-fill" id="high-bar"></span></div>
+              <span class="level-range">70–100</span>
+            </div>
+            <div class="risk-level-row">
+              <div class="risk-level-label"><span class="level-bullet medium-bullet"></span><span>Medium</span><strong id="medium-count">0</strong></div>
+              <div class="bar-track"><span class="bar-fill medium-fill" id="medium-bar"></span></div>
+              <span class="level-range">40–69</span>
+            </div>
+            <div class="risk-level-row">
+              <div class="risk-level-label"><span class="level-bullet low-bullet"></span><span>Low</span><strong id="low-count">0</strong></div>
+              <div class="bar-track"><span class="bar-fill low-fill" id="low-bar"></span></div>
+              <span class="level-range">0–39</span>
+            </div>
+          </div>
+          <div class="rule-note"><span class="info-mark">i</span><span>Scores are calculated using demo rules for amount, location, time, and repeated activity.</span></div>
+        </article>
+
+        <article class="panel quick-event-panel">
+          <div class="panel-heading">
+            <div><div class="panel-kicker">EVENT SIMULATOR</div><h2>Send a test event</h2></div>
+            <span class="sim-icon">↗</span>
+          </div>
+          <p class="panel-description">Publish a sample transaction to the RabbitMQ queue.</p>
+          <form id="event-form">
+            <div class="form-grid">
+              <label class="field"><span>Transaction amount (₹)</span><input type="number" id="amount" name="amount" min="0" max="1000000000" value="1250" required /></label>
+              <label class="field"><span>User ID</span><input type="text" id="user-id" name="userId" value="user-104" maxlength="60" required /></label>
+              <label class="field"><span>Merchant / source</span><input type="text" id="merchant" name="merchant" value="Urban Market" maxlength="100" required /></label>
+              <label class="field"><span>Location</span><select id="location" name="location" required><option value="Bengaluru">Bengaluru</option><option value="Mumbai">Mumbai</option><option value="Delhi">Delhi</option><option value="Unknown">Unknown</option><option value="New Country">New Country</option><option value="Overseas">Overseas</option></select></label>
+            </div>
+            <label class="field event-type-field"><span>Event type</span><select id="event-type" name="eventType"><option>Purchase</option><option>Transfer</option><option>Withdrawal</option><option>Login</option><option>Account activity</option></select></label>
+            <div class="form-bottom"><span class="form-hint"><span class="tiny-green-dot"></span> Queued for analysis</span><button class="button button-primary submit-button" id="submit-event" type="submit">Publish event <span>↗</span></button></div>
+          </form>
+        </article>
+      </section>
+
+      <section class="bottom-grid">
+        <article class="panel events-panel" id="events">
+          <div class="panel-heading events-heading">
+            <div><div class="panel-kicker">LIVE EVENT STREAM</div><h2>Recent events <span class="inline-count" id="table-count">0</span></h2></div>
+            <div class="table-controls">
+              <label class="search-box"><span>⌕</span><input id="search-input" type="search" placeholder="Search events..." aria-label="Search events" /></label>
+              <select class="filter-select" id="severity-filter" aria-label="Filter by severity"><option value="all">All risk levels</option><option value="High">High risk</option><option value="Medium">Medium risk</option><option value="Low">Low risk</option></select>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>EVENT / USER</th><th>MERCHANT</th><th>AMOUNT</th><th>RISK SCORE</th><th>SEVERITY</th><th>TIME</th></tr></thead>
+              <tbody id="event-table-body"><tr><td colspan="6" class="empty-cell"><span class="empty-icon">⌁</span><strong>No events yet</strong><span>Publish an event or use “Simulate event” to start the stream.</span></td></tr></tbody>
+            </table>
+          </div>
+          <div class="table-footer"><span id="table-footer-copy">Waiting for the first event</span><span class="footer-live"><span class="tiny-green-dot"></span> Live updates</span></div>
+        </article>
+
+        <article class="panel alerts-panel" id="alerts">
+          <div class="panel-heading"><div><div class="panel-kicker">NEEDS ATTENTION</div><h2>Risk alerts</h2></div><span class="alert-count-badge" id="alert-badge">0</span></div>
+          <p class="panel-description">Events with a risk score of 40 or higher.</p>
+          <div class="alert-list" id="alert-list"><div class="empty-alerts"><span class="empty-alert-icon">✓</span><strong>All quiet for now</strong><span>Risk alerts will appear here when a rule is triggered.</span></div></div>
+          <div class="alert-footer"><span class="alert-legend"><span class="foot-dot red-dot"></span> High</span><span class="alert-legend"><span class="foot-dot amber-dot"></span> Medium</span><span class="alert-threshold">Threshold: 40+</span></div>
+        </article>
+      </section>
+
+      <footer class="page-footer"><span>RISKWATCH <b>·</b> REAL-TIME RISK &amp; ANOMALY DETECTION</span><span>Demo project · Rule-based scoring · RabbitMQ</span></footer>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
